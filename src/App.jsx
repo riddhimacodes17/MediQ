@@ -2,13 +2,51 @@ import { useState } from 'react'
 
 
 function App() {
-
-  return (
-<CallNextPatient />
+const [page,setPage]=useState("patient");
+ const [fullName,setName]=useState("");
+const [age,setAge]=useState("");
+const [token,setToken]=useState(1);
+const [nextToken,setNextToken]=useState(1);
+const [queue,setQueue]=useState([]);
+const [currentPatient, setCurrentPatient]=useState(null);
+if(page==="patient") {
+ return (
+<PatientDetails 
+setPage={setPage}
+fullName={fullName}
+age={age}
+setName={setName}
+setAge={setAge}
+nextToken={nextToken}
+setToken={setToken}
+setNextToken={setNextToken}
+queue={queue}
+setQueue={setQueue}
+/>
   );
 }
+if(page==="token") {
+  return(
+    <TokenPage 
+    token={token}
+    setPage={setPage}
+    currentPatient={currentPatient}
+    />
+  );
+}
+if(page==="doctor") {
+  return(
+    <CallNextPatient 
+    queue={queue}
+    setQueue={setQueue}
+    currentPatient={currentPatient}
+    setCurrentPatient={setCurrentPatient}
+        />
+  );
+}
+}
 
-  function PatientDetails() {
+  function PatientDetails({setPage, fullName,age,setAge,setName,nextToken,setToken,setNextToken,queue,setQueue}) {
     return (
   <div className="min-h-screen flex flex-col items-center">
     <div className="w-full flex align-center items-center justify-center px-6 py-4 border border-[#2A7C13]">
@@ -20,18 +58,37 @@ function App() {
   </div>
   <div className="flex flex-col align-center justify-center gap-3 mt-5" id="detailsSection">
     <h3 className="text-[#1F5C3A] text-base font-medium">👤 Full Name</h3>
-    <input type="text" placeholder="Enter your name" className="w-lg text-[#2A7C13] border border-[#1F5C3A] rounded-md"/>
-    <h3 className="text-[#1F5C3A] text-base font-medium">🔒 Age</h3>
-    <input type="text" placeholder="Enter your age" className="max-w-lg text-[#2A7C13] border border-[#1F5C3A]  rounded-md"/>
+    <input type="text" placeholder="Enter your name" className="w-lg text-[#2A7C13] 
+    border border-[#1F5C3A] rounded-md" value={fullName} onChange={(e) => setName(e.target.value)}/>
+    <h3 className="text-[#1F5C3A] text-base font-medium" >🔒 Age</h3>
+    <input type="number" placeholder="Enter your age" className="max-w-lg text-[#2A7C13] 
+    border border-[#1F5C3A]  rounded-md" value={age} onChange={(e) => setAge(e.target.value)}/>
   </div>
-  <button className="flex align-center justify-center items-center bg-[#1F5C3A] rounded-md h-9 w-60 mt-6 text-white
-  hover:shadow-md transition duration-300 hover:scale-105">Get Token</button>
+  <button className="flex align-center justify-center items-center bg-[#1F5C3A] rounded-md h-9 w-60
+   mt-6 text-white hover:shadow-md transition duration-300 hover:scale-105" onClick={() => {
+  setToken(nextToken);
+  setNextToken(nextToken+1);
+  setQueue([...queue,
+    {
+    name: fullName,
+    age: age,
+    token: nextToken
+  }
+]);
+  setPage("token");
+  }}>Get Token</button>
   <p className="text-[#66756C] text-sm mt-3">Your information is secure and only used for queue management</p>
   </div>
   );
 }
 
-function TokenPage() {
+function TokenPage({token,setPage,currentPatient}) {
+  const isMyTurn=currentPatient && currentPatient.token===token;
+  if(isMyTurn) {
+    return <YourTurn 
+    token={token}
+    />
+  }
   return(
 <div className="min-h-screen flex flex-col items-center">
     <div className="w-full flex align-center items-center justify-center px-6 py-4 border-2 border-[#2A7C13]">
@@ -48,7 +105,7 @@ function TokenPage() {
     <div className=" flex flex-col justify-center align-center items-center 
     w-85 h-33 gap-4 bg-[#DDEBDD] border border-[#1F5C3A] rounded-lg mt-2 ">
       <p className="text-[#1F5C3A] text-sm font-medium">Your Token Number</p>
-      <h1 className="text-[#1F5C3A] text-5xl font-bold">27</h1>
+      <h1 className="text-[#1F5C3A] text-5xl font-bold">{token}</h1>
     </div>
 
     <div className="flex gap-5 mt-5">
@@ -71,11 +128,17 @@ function TokenPage() {
     </div>
     <p className="text-[#1F5C3A] text-sm">We will notify you when it's your turn</p>
     </div>
+    <button onClick={() => {
+      setPage("doctor");
+    }}>doc dashboard</button>
+    <button onClick={() => {
+      setPage("patient");
+    }}>back to details</button>
     </div>
   );
 }
 
-function YourTurn() {
+function YourTurn({token}) {
   return(
  <div className="min-h-screen flex flex-col items-center">
     <div className="w-full flex align-center items-center justify-center px-6 py-4 bg-[#DDEBDD] border border-[#1F5C3A]">
@@ -86,7 +149,7 @@ function YourTurn() {
       <div className="flex items-center justify-center rounded-full bg-[#DDEBDD]  
     w-23 h-23 text-[#1F5C3A] text-5xl font-bold animate-[popIn_0.5s_ease-out] border border-[#1F5C3A]">🕭</div>
       <p className="text-[#1F5C3A] text-4xl font-bold">It's Your Turn!</p>
-      <h1 className="text-[#1F5C3A] text-3xl font-medium">Token 27</h1>
+      <h1 className="text-[#1F5C3A] text-3xl font-medium">Token {token}</h1>
       <p className="text-[#66756C] text-sm">Please proceed to the doctor's room</p>
     </div>
     </div>
@@ -117,19 +180,32 @@ function DoctorLogin() {
   );
 }
 
-function CallNextPatient() {
+function CallNextPatient({queue,setQueue,currentPatient,setCurrentPatient}) {
   return(
     <div className="flex flex-col items-center mt-5" >
         <p className="text-5xl font-bold text-[#1F5C3A]">👤Welcome, Doctor Varshney</p>
 <div className=" flex flex-col align-center items-center 
     w-85 h-45 gap-2 bg-[#DDEBDD] border border-[#1F5C3A] rounded-lg mt-11">
       <p className="text-[#1F5C3A] text-sm font-medium">Current Token</p>
-      <h1 className="text-[#1F5C3A] text-5xl font-bold">25</h1>
-      <button className="flex align-center justify-center items-center bg-[#1F5C3A] rounded-md h-9 w-60 mt-6 text-white
-  hover:shadow-md transition duration-300 hover:scale-105">Call Next Patient</button>
+      <h1 className="text-[#1F5C3A] text-5xl font-bold">{currentPatient ? currentPatient.token : "--"}</h1>
+      <h1 className="text-[#1F5C3A] text-2xl ">{currentPatient ? currentPatient.name : "--"}</h1>
+      <button className="flex align-center justify-center items-center bg-[#1F5C3A] rounded-md h-9 w-60 mt-1 text-white
+  hover:shadow-md transition duration-300 hover:scale-105" onClick={() => {
+    if(queue.length===0) return;
+    const patient=queue[0];
+    setCurrentPatient(patient);
+    setQueue(queue.slice(1));
+  }}>Call Next Patient</button>
     </div>
     <div className="flex flex-col w-100 h-[38vh] mt-7 border border-[#1F5C3A] rounded-md ">
       <p className="ml-2 text-lg font-medium text-[#1F5C3A]">Queue</p>
+      {queue.map((patient) => (
+        <div key={patient.token} className="flex justify-between mr-2 ml-2 mb-2 items-center border border-[#1F5C3A] rounded-md h-12 ">
+          <span className="text-[#1F5C3A] ml-2 font-bold">{patient.token}</span>
+          <span className="text-[#1F5C3A] font-medium ">{patient.name}</span>
+          <span className="text-red mr-2">Waiting</span>
+          </div>
+      ))}
     </div>
     </div>
   );
