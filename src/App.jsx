@@ -1,9 +1,9 @@
 import { useState } from 'react'
-
+import { supabase } from "./lib/supabaseClient";
 
 function App() {
-const [page,setPage]=useState("patient");
- const [fullName,setName]=useState("");
+const [page,setPage]=useState("loginChoice");
+const [fullName,setName]=useState("");
 const [age,setAge]=useState("");
 const [token,setToken]=useState(1);
 const [nextToken,setNextToken]=useState(1);
@@ -44,7 +44,44 @@ if(page==="doctor") {
         />
   );
 }
+if(page==="loginChoice") {
+  return(
+    <DoctorOrUser
+    setPage={setPage}
+    />
+
+  );
 }
+if(page==="doctorLogin") {
+  return(
+    <DoctorLogin
+    setPage={setPage}
+    />
+  )
+}
+}
+  function DoctorOrUser({setPage}) {
+    return (
+      <div className="min-h-screen flex flex-col items-center">
+    <div className="w-full flex align-center items-center justify-center px-6 py-4 border border-[#2A7C13]">
+    <h1 className="text-[#1F5C3A] text-2xl font-bold">🏥 MediQ</h1>
+    </div>
+    <div className="flex flex-col border border-[#2A7C13] rounded-sm mt-15">
+    <div className="flex flex-col items-center ml-30 mr-30 mb-25 mt-10">
+      <h1 className="text-[#1F5C3A] text-3xl font-bold">Choose Your Role!</h1>
+      <button className="flex align-center justify-center items-center bg-[#1F5C3A] rounded-md h-10 w-60
+   mt-6 text-white hover:shadow-md transition duration-300 hover:scale-105 mt-18" onClick={() => {
+        setPage("doctorLogin");
+      }}>Login as a Doctor</button>
+      <button className="flex align-center justify-center items-center bg-[#1F5C3A] rounded-md h-10 w-60
+   mt-6 text-white hover:shadow-md transition duration-300 hover:scale-105 mt-10" onClick={() => {
+        setPage("patient");
+      }}>Continue as a Patient</button>
+    </div>
+    </div>
+    </div>
+    )
+  }
 
   function PatientDetails({setPage, fullName,age,setAge,setName,nextToken,setToken,setNextToken,queue,setQueue}) {
     return (
@@ -155,7 +192,7 @@ function YourTurn({token}) {
     </div>
   );
 }
-function DoctorLogin() {
+function DoctorLogin({setPage}) {
   return(
     <div className="flex flex-col mt-7 align-center items-center justify-center">
 <div className="w-full flex  px-5 py-7 align-center items-center justify-center ">
