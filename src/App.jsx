@@ -57,7 +57,16 @@ if(page==="doctorLogin") {
     <DoctorLogin
     setPage={setPage}
     />
-  )
+  );
+}
+if(page==="callNext") {
+  return(
+    <CallNextPatient
+    queue={queue}
+    setQueue={setQueue}
+    currentPatient={currentPatient}
+    setCurrentPatient={setCurrentPatient}/>
+  );
 }
 }
   function DoctorOrUser({setPage}) {
@@ -193,6 +202,9 @@ function YourTurn({token}) {
   );
 }
 function DoctorLogin({setPage}) {
+  const [email,setEmail] = useState("");
+  const [password,setPassword] = useState("");
+  const [error, setError] = useState("");
   return(
     <div className="flex flex-col mt-7 align-center items-center justify-center">
 <div className="w-full flex  px-5 py-7 align-center items-center justify-center ">
@@ -204,14 +216,26 @@ function DoctorLogin({setPage}) {
     </div>
     <div className="flex flex-col align-center justify-center gap-4 mt-5" id="detailsSection">
     <h3 className="text-[#1F5C3A] text-base font-bold">📩 Email address</h3>
-    <input type="text" placeholder="doctor@mediq.com" className="w-lg text-[#2A7C13] border border-[#1F5C3A] rounded-md"/>
+    <input type="email" value={email} placeholder="doctor@mediq.com" className="w-lg text-[#2A7C13] border 
+    border-[#1F5C3A] rounded-md" onChange={(e) => setEmail(e.target.value)}/>
     <h3 className="text-[#1F5C3A] text-base font-bold">🔒 Password</h3>
-    <input type="text" placeholder="Enter your password" className="max-w-lg text-[#2A7C13] border border-[#1F5C3A]  rounded-md"/>
+    <input type="password" value={password} placeholder="Enter your password" className="max-w-lg text-[#2A7C13]
+     border border-[#1F5C3A]  rounded-md" onChange={(e) => setPassword(e.target.value)}/>
   </div>
   <div className="flex flex-col align-center items-center mt-3">
     <button className="flex align-center justify-center items-center bg-[#1F5C3A] rounded-md h-9 w-60 mt-6 text-white
-  hover:shadow-md transition duration-300 hover:scale-105">Login</button>
-  <a href="#" className="text-[#66756C] text-sm mt-2  hover:shadow-md transition duration-300 hover:scale-100">Forgot password?</a>
+  hover:shadow-md transition duration-300 hover:scale-105" onClick={async () => {
+    const { data,error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if(error) {
+      setError(error.message);
+      return;
+    }
+    setPage("callNext");
+  }}>Login</button>
+  {error && <p className="text-[#66756C] mt-2">{error}</p>}
   </div>
     </div>
   );
