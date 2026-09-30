@@ -111,16 +111,38 @@ if(page==="callNext") {
     border border-[#1F5C3A]  rounded-md" value={age} onChange={(e) => setAge(e.target.value)}/>
   </div>
   <button className="flex align-center justify-center items-center bg-[#1F5C3A] rounded-md h-9 w-60
-   mt-6 text-white hover:shadow-md transition duration-300 hover:scale-105" onClick={() => {
-  setToken(nextToken);
-  setNextToken(nextToken+1);
-  setQueue([...queue,
-    {
+   mt-6 text-white hover:shadow-md transition duration-300 hover:scale-105" onClick={async () => {
+    const patientId= crypto.randomUUID();
+    const {data: tokenData, error: tokenError }=
+    await supabase.rpc("get_next_token");
+    if(tokenError) {
+      console.error(tokenError);
+      return;
+    }
+    const newToken=tokenData;
+    const {error}=await supabase
+    .from("patients")
+    .insert([
+      {
+    id: patientId,
     name: fullName,
-    age: age,
-    token: nextToken
+    age: Number(age),
+    token: newToken,
+    status: "waiting"
   }
-]);
+    ]);
+   if(error) {
+    console.error(error);
+    return;
+   }
+   localStorage.setItem(
+    "mediqPatient",
+    JSON.stringify({
+      patientId: patientId,
+      token: newToken
+    })
+   );
+   setToken(newToken);
   setPage("token");
   }}>Get Token</button>
   <p className="text-[#66756C] text-sm mt-3">Your information is secure and only used for queue management</p>
