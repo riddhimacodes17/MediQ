@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react';
 import { supabase } from "./lib/supabaseClient";
 
 function App() {
@@ -264,6 +264,22 @@ function DoctorLogin({setPage}) {
 }
 
 function CallNextPatient({queue,setQueue,currentPatient,setCurrentPatient}) {
+   useEffect(() => {
+    async function fetchPatients() {
+      const {data,error} = await supabase 
+      .from("patients")
+      .select("*")
+      .eq("status", "waiting")
+      .order("created_at",{ ascending: true});
+      
+      if(error) {
+        console.error(error);
+        return;
+      }
+      setQueue(data);
+    }
+    fetchPatients();
+  }, []);
   return(
     <div className="flex flex-col items-center mt-5" >
         <p className="text-5xl font-bold text-[#1F5C3A]">👤Welcome, Doctor Varshney</p>
@@ -273,9 +289,17 @@ function CallNextPatient({queue,setQueue,currentPatient,setCurrentPatient}) {
       <h1 className="text-[#1F5C3A] text-5xl font-bold">{currentPatient ? currentPatient.token : "--"}</h1>
       <h1 className="text-[#1F5C3A] text-2xl ">{currentPatient ? currentPatient.name : "--"}</h1>
       <button className="flex align-center justify-center items-center bg-[#1F5C3A] rounded-md h-9 w-60 mt-1 text-white
-  hover:shadow-md transition duration-300 hover:scale-105" onClick={() => {
+  hover:shadow-md transition duration-300 hover:scale-105" onClick={async () => {
     if(queue.length===0) return;
     const patient=queue[0];
+    const {error}=await supabase
+    .from ("patients")
+    .update({status: "called"})
+    .eq("id",patient.id);
+    if (error) {
+      console.error(error);
+      return;
+    }
     setCurrentPatient(patient);
     setQueue(queue.slice(1));
   }}>Call Next Patient</button>
