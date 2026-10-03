@@ -151,11 +151,30 @@ if(page==="callNext") {
 }
 
 function TokenPage({token,setPage,currentPatient}) {
-  const isMyTurn=currentPatient && currentPatient.token===token;
+  const [isMyTurn, setIsMyTurn]=useState(false);
+  useEffect(() => {
+    const saved=localStorage.getItem("mediqPatient");
+    if(!saved) return;
+    const { patientId }=JSON.parse(saved);
+    const channel= supabase
+    .channel(`patient: ${patientId}`)
+    .on(
+      "broadcast",
+      { event: "status_changed" },
+      (payload) => {
+        if(payload.payload.patient_id===patientId && payload.payload.status==="called" ) {
+          setIsMyTurn(true);
+        }
+      }
+    )
+    .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  },[]);
   if(isMyTurn) {
     return <YourTurn 
-    token={token}
-    />
+    token={token} />
   }
   return(
 <div className="min-h-screen flex flex-col items-center">
