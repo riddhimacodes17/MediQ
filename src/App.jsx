@@ -150,8 +150,9 @@ if(page==="callNext") {
   );
 }
 
-function TokenPage({token,setPage,currentPatient}) {
+function TokenPage({token}) {
   const [isMyTurn, setIsMyTurn]=useState(false);
+  const [currentToken, setCurrentToken]=useState(null);
   useEffect(() => {
     const saved=localStorage.getItem("mediqPatient");
     if(!saved) return;
@@ -162,8 +163,11 @@ function TokenPage({token,setPage,currentPatient}) {
       "broadcast",
       { event: "status_changed" },
       (payload) => {
-        if(payload.payload.patient_id===patientId && payload.payload.status==="called" ) {
+        if(payload.payload.status==="called") {
+          setCurrentToken(payload.payload.token);
+        if(payload.payload.patient_id===patientId) {
           setIsMyTurn(true);
+        }
         }
       }
     )
@@ -199,12 +203,12 @@ function TokenPage({token,setPage,currentPatient}) {
     <div className="flex flex-col justify-center align-center items-center 
     w-40 h-20 gap-1 border-2 border-[#DDEBDD] rounded-lg">
       <p className="text-[#1F5C3A]">Current Token</p>
-      <h1 className="text-[#1F5C3A] font-bold">24</h1>
+      <h1 className="text-[#1F5C3A] font-bold">{currentToken ?? "--"}</h1>
     </div>
     <div className="flex flex-col justify-center align-center items-center 
     w-40 h-20 gap-1 border-2 border-[#DDEBDD] rounded-lg ">
       <p className="text-[#1F5C3A]">People Before You</p>
-      <h1 className="text-[#1F5C3A] font-bold">3</h1>
+      <h1 className="text-[#1F5C3A] font-bold">{currentToken=== null ? "--": Math.max(0,token-currentToken)}</h1>
       </div>
     </div>
     <div className=" flex flex-col justify-center align-center items-center 
@@ -215,12 +219,6 @@ function TokenPage({token,setPage,currentPatient}) {
     </div>
     <p className="text-[#1F5C3A] text-sm">We will notify you when it's your turn</p>
     </div>
-    <button onClick={() => {
-      setPage("doctor");
-    }}>doc dashboard</button>
-    <button onClick={() => {
-      setPage("patient");
-    }}>back to details</button>
     </div>
   );
 }
