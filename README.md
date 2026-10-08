@@ -216,7 +216,7 @@ Make sure you have:
 Clone the repository:
 
 ```bash
-git clone <your-repository-url>
+git clone https://github.com/riddhimacodes17/MediQ.git
 ```
 
 Navigate into the project:
